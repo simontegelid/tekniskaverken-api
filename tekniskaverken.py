@@ -181,6 +181,7 @@ class TekniskaVerken(object):
 
         ret = []
         for x in values:
-            ret.append((int(x['ar']), float(x['forbrukning'])))
+            d = datetime.datetime(int(x['ar']), 1, 1)
+            ret.append((d, float(x['forbrukning'])))
 
         return ret
