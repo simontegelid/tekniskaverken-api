@@ -122,7 +122,7 @@ class TekniskaVerken(object):
             if since <= d <= until:
                 ret.append((d, float(x['forbrukning'])))
 
-        return ret
+        return sorted(ret, key=lambda r: r[0])
 
     def get_monthly(self, service, since, until):
         """ Get monthly measurements for a given service
@@ -148,7 +148,7 @@ class TekniskaVerken(object):
             if since <= d <= until:
                 ret.append((d, float(x['forbrukning'])))
 
-        return ret
+        return sorted(ret, key=lambda r: r[0])
 
     def get_yearly(self, service, since, until, adjusted=False):
         """ Get yearly measurements for a given service
@@ -184,4 +184,4 @@ class TekniskaVerken(object):
             d = datetime.datetime(int(x['ar']), 1, 1)
             ret.append((d, float(x['forbrukning'])))
 
-        return ret
+        return sorted(ret, key=lambda r: r[0])
