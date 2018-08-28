@@ -6,7 +6,6 @@ From the command line, run
 ```
 python setup.py install
 ```
-The package depends on [requests](https://pypi.python.org/pypi/requests).
 
 ## Usage
 ```python
