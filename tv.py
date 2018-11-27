@@ -9,6 +9,7 @@ import tekniskaverken
 parser = argparse.ArgumentParser(description='TekniskaVerken CLI')
 parser.add_argument('-u', '--username', help='Username')
 parser.add_argument('-p', '--password', help='Password')
+parser.add_argument('-v', '--verbosity', default='error', choices=('critical', 'error', 'warning', 'info', 'debug'), help='Verbosity')
 parser.add_argument('--service', help='The requested service (eg. fjarrvarme, el, vatten, avfall). Availability depends on the provided account.')
 parser.add_argument('--period', choices=['daily', 'monthly', 'yearly'])
 parser.add_argument('--since', help='Starting point. Format: "YYYY-MM-DD" for daily, "YYYY-MM" for montly, "YYYY" for yearly.')
@@ -28,7 +29,7 @@ since = datetime.datetime.strptime(args.since, FMTS[args.period])
 until = datetime.datetime.strptime(args.until, FMTS[args.period])
 api = APIS[args.period]
 
-t = tekniskaverken.TekniskaVerken(args.username, args.password)
+t = tekniskaverken.TekniskaVerken(args.username, args.password, verbosity=args.verbosity)
 
 with sys.stdout as f:
     writer = csv.writer(f)

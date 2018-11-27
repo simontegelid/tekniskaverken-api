@@ -4,6 +4,8 @@
 import json
 import re
 import datetime
+import logging
+import sys
 
 import requests
 
@@ -20,7 +22,7 @@ class TekniskaVerken(object):
     LOGIN_URL = 'https://mina-sidor.tekniskaverken.se/portalen/index.xml'
     JSON_URL = 'https://mina-sidor.tekniskaverken.se/_internal/kundportal/export/{lpid}/{apiname}.json'
 
-    def __init__(self, user, passw):
+    def __init__(self, user, passw, verbosity=logging.CRITICAL):
         """
         :user Username for mina-sidor.tekniskaverken.se
         :passw Password for mina-sidor.tekniskaverken.se
@@ -30,10 +32,16 @@ class TekniskaVerken(object):
         self.logged_in = False
         self.lpids = None
 
+        logging.basicConfig(format='%(asctime)s: %(levelname)s: %(name)s: %(message)s',
+                            stream=sys.stderr)
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.setLevel(verbosity.upper())
+
     def login(self):
         """ Performs a login to 'mina-sidor.tekniskaverken.se' and stores
         the available lpids ('leveranspunkts-ID').
         """
+        self.log.debug("Login")
         r = self.session.post(
             self.LOGIN_URL, data=self.login_data, verify=False)
 
@@ -42,6 +50,7 @@ class TekniskaVerken(object):
 
         # Get hold of available services (leveranspunkts-ID, lpid)
         lpid_data = re.findall(r'href="(\w+)\/info\/\?lpid=(\d+)"', r.text)
+        self.log.info("Found lpids %s" % ', '.join(["'%s' (%s)" % (s[0], s[1]) for s in lpid_data]))
         if len(lpid_data) > 0:
             self.lpids = dict(lpid_data)
 
@@ -55,7 +64,7 @@ class TekniskaVerken(object):
 
         :service Eg. 'fjarrvarme', 'el', 'vatten', 'avfall', ...
         :apiname Eg. 'yearly', 'monthly', 'daily'
-        :params_dice The params for the requested apiname, see other methods
+        :params_dict The params for the requested apiname, see other methods
         """
         assert(str(apiname) in ['yearly', 'monthly', 'daily'])
 
@@ -63,8 +72,10 @@ class TekniskaVerken(object):
             raise Exception("Requested service is not in your lpids (%s)"
                             % (", ".join(self.lpids)))
 
-        r = self.session.get(self.JSON_URL.format(lpid=self.lpids[service],
-                                                  apiname=apiname),
+        url = self.JSON_URL.format(lpid=self.lpids[service],
+                                   apiname=apiname)
+        self.log.info("Get '%s' with params %s" % (url, params_dict))
+        r = self.session.get(url,
                              params=params_dict, verify=False)
 
         if r.status_code == 404:
